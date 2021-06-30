@@ -1,4 +1,6 @@
-class WhatsAppController {
+import {Format} from './../util/Format';
+import {CameraController} from './CameraController';
+export class WhatsAppController {
     constructor() {
         console.log('WhatsAppController OK');
         this.elementsPrototype();
@@ -136,12 +138,15 @@ class WhatsAppController {
             this.el.panelCamera.css({
                 'height': 'calc(100% - 120px)',
             });
+
+            this._camera = new CameraController(this.el.videoCamera);
         });
 
         //Fecha o painel de tirar foto
         this.el.btnClosePanelCamera.on('click', e => {
             this.closeAllMainPanel();
             this.el.panelMessagesContainer.show();
+            this._camera.stop();
         });
 
         // Evento para tirar foto 

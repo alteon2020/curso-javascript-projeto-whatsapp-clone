@@ -1,4 +1,4 @@
-class Format {
+export class Format {
     /*
      * Retorna os id's dos elementos transformados em CamelCase
     */
