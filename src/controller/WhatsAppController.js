@@ -1,5 +1,7 @@
-import {Format} from './../util/Format';
-import {CameraController} from './CameraController';
+import { Format } from './../util/Format';
+import { CameraController } from './CameraController';
+import { DocumentPreviewController } from './DocumentPreviewController';
+
 export class WhatsAppController {
     constructor() {
         console.log('WhatsAppController OK');
@@ -151,8 +153,30 @@ export class WhatsAppController {
 
         // Evento para tirar foto 
         this.el.btnTakePicture.on('click', e => {
-            console.log('Take Picture');
+            // chama o método da câmera
+            let dataUrl = this._camera.takePicture();
+            this.el.pictureCamera.src = dataUrl;
+            this.el.pictureCamera.show();
+            this.el.videoCamera.hide();
+            this.el.btnReshootPanelCamera.show();
+            this.el.containerTakePicture.hide();
+            this.el.containerSendPicture.show();
         });
+
+        //Botão para tirar a foto novamente
+        this.el.btnReshootPanelCamera.on('click', e => {
+            this.el.pictureCamera.hide();
+            this.el.videoCamera.show();
+            this.el.btnReshootPanelCamera.hide();
+            this.el.containerTakePicture.show();
+            this.el.containerSendPicture.hide();
+        });
+
+        //Botão para enviar a foto
+        this.el.btnSendPicture.on('click', e => {
+            console.log(this.el.pictureCamera.src);
+        });
+
 
         //Evento para anexar documento
         this.el.btnAttachDocument.on('click', e => {
@@ -161,6 +185,44 @@ export class WhatsAppController {
             this.el.panelDocumentPreview.css({
                 'height': 'calc(100% - 120px)',
             });
+            this.el.inputDocument.click();
+        });
+
+        //Capturando o arquivo
+        this.el.inputDocument.on('change', e => {
+            if (this.el.inputDocument.files.length) {
+                let file = this.el.inputDocument.files[0];
+                this._documentPreviewController = new DocumentPreviewController(file);
+
+                this._documentPreviewController.getPreviewData().then(result => {
+                    this.el.imgPanelDocumentPreview.src = result.src;
+                    this.el.infoPanelDocumentPreview.innerHTML = result.info;
+                    this.el.imagePanelDocumentPreview.show();
+                    this.el.filePanelDocumentPreview.hide();
+
+                }).catch(err => {
+                    switch (file.type) {
+                        case 'application/vnd.ms-excel':
+                        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-xls';
+                            break;
+                        case 'application/vnd.ms-powerpoint':
+                        case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-ppt';
+                            break;
+                        case 'application/msword':
+                        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-doc';
+                            break;
+                        default:
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-generic';
+                            break;
+                    }
+                    this.el.filenamePanelDocumentPreview.innerHTML = file.name;
+                    this.el.imagePanelDocumentPreview.hide();
+                    this.el.filePanelDocumentPreview.show();
+                });
+            }
         });
 
         //fecha o painel de documento
@@ -232,19 +294,19 @@ export class WhatsAppController {
             this.el.panelEmojis.toggleClass('open');
         });
         // escolhe os emojis
-        this.el.panelEmojis.querySelectorAll('.emojik').forEach(emoji=>{
-            emoji.on('click', e=>{
+        this.el.panelEmojis.querySelectorAll('.emojik').forEach(emoji => {
+            emoji.on('click', e => {
                 let img = this.el.imgEmojiDefault.cloneNode();
                 img.style.cssText = emoji.style.cssText;
                 img.dataset.unicode = emoji.dataset.unicode;
                 img.alt = emoji.dataset.unicode;
 
-                emoji.classList.forEach(name =>{
+                emoji.classList.forEach(name => {
                     img.classList.add(name);
                 });
                 //Adicionar o emoji em qualquer local do texto
                 let cursor = window.getSelection();
-                if(!cursor.focusNode || !cursor.focusNode.id == 'input-text'){
+                if (!cursor.focusNode || !cursor.focusNode.id == 'input-text') {
                     this.el.inputText.focus();
                     cursor = window.getSelection();
                 }
@@ -261,7 +323,7 @@ export class WhatsAppController {
             });
         });
 
-        
+
 
 
     }
