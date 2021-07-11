@@ -7,7 +7,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.config.js",
     "start": "webpack-dev-server"
-
   },
   "repository": {
     "type": "git",
@@ -20,7 +19,8 @@
   },
   "homepage": "https://github.com/alteon2020/curso-javascript-projeto-whatsapp-clone#readme",
   "dependencies": {
+    "pdfjs-dist": "^2.0.489",
     "webpack": "^3.1.0",
-    "webpack-dev-server": "^2.5.1"
+    "webpack-dev-server": "^2.11.5"
   }
 }
