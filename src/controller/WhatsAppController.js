@@ -1,5 +1,6 @@
 import { Format } from './../util/Format';
 import { CameraController } from './CameraController';
+import { MicrophoneController } from './MicrophoneController';
 import { DocumentPreviewController } from './DocumentPreviewController';
 
 export class WhatsAppController {
@@ -261,18 +262,34 @@ export class WhatsAppController {
 
         //Evento de microfone
         this.el.btnSendMicrophone.on('click', e => {
+            
             this.el.recordMicrophone.show();
             this.el.btnSendMicrophone.hide();
-            this.startRecordMicrophoneTime();
+
+            this._microphoneController = new MicrophoneController();
+            
+            this._microphoneController.on('ready', audio=>{
+                
+                this._microphoneController.startRecorder();
+            });
+
+            this._microphoneController.on('recordtimer', timer =>{
+            
+                this.el.recordMicrophoneTimer.innerHTML = Format.toTime(timer);
+                
+            });
+
         });
 
         //Fecha o microphone
         this.el.btnCancelMicrophone.on('click', e => {
+            this._microphoneController.stopRecorder();
             this.closeRecordMicrophone();
         });
 
         //Envia o audio do microphone
         this.el.btnFinishMicrophone.on('click', e => {
+            this._microphoneController.stopRecorder();
             this.closeRecordMicrophone();
         });
 
@@ -341,20 +358,10 @@ export class WhatsAppController {
 
     }
 
-    //Tempo do microphone
-    startRecordMicrophoneTime() {
-        let start = Date.now();
-        this._recordMicrophoneInterval = setInterval(() => {
-            this.el.recordMicrophoneTimer.innerHTML = Format.toTime(Date.now() - start);
-        }, 100);
-    }
-
-
     //Fecha o painel de microphone
     closeRecordMicrophone() {
         this.el.recordMicrophone.hide();
         this.el.btnSendMicrophone.show();
-        clearInterval(this._recordMicrophoneInterval);
     }
     //Fecha os paineis principais
     closeAllMainPanel() {
