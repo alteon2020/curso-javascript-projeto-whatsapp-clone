@@ -11,6 +11,7 @@ Projeto desenvolvido como exemplo do Curso Completo de JavaScript na Udemy.com.
 npm init
 npm install webpack@3.1.0 --save
 npm install webpack-dev-server@2.5.1 --save
+npm install pdfjs-dist@2.0.489 --save
 ### Recursos Usados
 
 Lista de recursos usados em aula para este projeto

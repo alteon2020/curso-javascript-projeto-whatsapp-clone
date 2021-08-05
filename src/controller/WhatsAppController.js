@@ -2,13 +2,27 @@ import { Format } from './../util/Format';
 import { CameraController } from './CameraController';
 import { MicrophoneController } from './MicrophoneController';
 import { DocumentPreviewController } from './DocumentPreviewController';
+import { Firebase } from './../util/Firebase';
 
 export class WhatsAppController {
     constructor() {
         console.log('WhatsAppController OK');
+        this._firebase = new Firebase();
+        this.initAuth();
         this.elementsPrototype();
         this.loadElements();
         this.initEvents();
+        
+    }
+
+    initAuth(){
+        this._firebase.initAuth()
+        .then(response=>{
+            console.log(response);
+        })
+        .catch(err=>{
+            console.log(err);
+        });
     }
     /*
      * Pega todos os ids da página e chama a função pra transformar em camelCase
