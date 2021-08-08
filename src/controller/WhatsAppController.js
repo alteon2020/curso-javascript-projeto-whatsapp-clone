@@ -3,6 +3,7 @@ import { CameraController } from './CameraController';
 import { MicrophoneController } from './MicrophoneController';
 import { DocumentPreviewController } from './DocumentPreviewController';
 import { Firebase } from './../util/Firebase';
+import { User } from '../model/User';
 
 export class WhatsAppController {
     constructor() {
@@ -12,21 +13,43 @@ export class WhatsAppController {
         this.elementsPrototype();
         this.loadElements();
         this.initEvents();
-        
+
     }
 
-    initAuth(){
+    initAuth() {
         this._firebase.initAuth()
-        .then(response=>{
-            this._user = response.user;
+            .then(response => {
+                this._user = new User(response.user.email);
 
-            this.el.appContent.css({
-                display: 'flex'
+                this._user.on('datachange', data => {
+                    document.querySelector('title').innerHTML = data.name + ' - WhatsApp Clone';
+                    this.el.inputNamePanelEditProfile.innerHTML = data.name;
+                    if(data.photo) {
+                        let photo = this.el.imgPanelEditProfile;
+                        photo.src = data.photo;
+                        photo.show();
+                        this.el.imgDefaultPanelEditProfile.hide();
+
+                        let photo2 = this.el.myPhoto.querySelector('img');
+                        photo2.src = data.photo;
+                        photo2.show();
+                    }
+                });
+
+                this._user.name = response.user.displayName;
+                this._user.email = response.user.email;
+                this._user.photo = response.user.photoURL;
+                this._user.save().then(()=>{
+                    this.el.appContent.css({
+                        display:'flex'
+                    });
+                });
+
+                
+            })
+            .catch(err => {
+                console.log(err);
             });
-        })
-        .catch(err=>{
-            console.log(err);
-        });
     }
     /*
      * Pega todos os ids da página e chama a função pra transformar em camelCase
@@ -44,49 +67,71 @@ export class WhatsAppController {
     */
 
     elementsPrototype() {
+        
         Element.prototype.hide = function () {
             this.style.display = 'none';
             return this;
         }
+        
         Element.prototype.show = function () {
             this.style.display = 'block';
             return this;
         }
+        
         Element.prototype.toggle = function () {
             this.style.display = (this.style.display === 'none') ? 'block' : 'none';
             return this;
         }
+        
         Element.prototype.on = function (events, fn) {
             events.split(' ').forEach(event => {
                 this.addEventListener(event, fn);
             });
             return this;
         }
+        
         Element.prototype.css = function (styles) {
             for (let name in styles) {
                 this.style[name] = styles[name];
             }
             return this;
         }
+        
         Element.prototype.addClass = function (name) {
             this.classList.add(name);
             return this;
         }
+        
         Element.prototype.removeClass = function (name) {
             this.classList.remove(name);
         }
+        
         Element.prototype.toggleClass = function (name) {
             this.classList.toggle(name);
             return this;
         }
+        
         Element.prototype.hasClass = function (name) {
             return this.classList.contains(name);
         }
 
+        HTMLFormElement.prototype.getForm = function(){
+            return new FormData(this);
+        }
+
+        HTMLFormElement.prototype.toJSON = function(){
+            let json = this.getForm().forEach((value, key)=>{
+                json[key] = value;
+            });
+
+            return json;     
+        }
+
+
     }
+
     /* 
      * Metódo que inicia todos os eventos
-     *
      */
     initEvents() {
 
@@ -122,6 +167,31 @@ export class WhatsAppController {
             this.el.panelAddContact.removeClass('open');
         });
 
+        this.el.photoContainerEditProfile.on('click', e=>{
+
+            this.el.inputProfilePhoto.click();
+        });
+
+        this.el.inputNamePanelEditProfile.on('keypress', e=>{
+            if(e.key === 'Enter'){
+                e.preventDefault();
+                this.el.btnSavePanelEditProfile.click();
+            }
+        });
+
+        this.el.btnSavePanelEditProfile.on('click', e=>{
+            
+            this.el.btnSavePanelEditProfile.disabled = true;
+            this._user.name = this.el.inputNamePanelEditProfile.innerHTML;
+            this._user.save().then(()=>{
+                this.el.btnSavePanelEditProfile.disabled = false;
+            });
+        });
+
+        this.el.formPanelAddContact.on('submit', e=>{
+            e.preventDefault();
+            let formData = new FormData(this.el.formPanelAddContact);
+        });
         // clique e opções da conversa
         this.el.contactsMessagesList.querySelectorAll('.contact-item').forEach(item => {
             item.on('click', e => {
@@ -280,21 +350,21 @@ export class WhatsAppController {
 
         //Evento de microfone
         this.el.btnSendMicrophone.on('click', e => {
-            
+
             this.el.recordMicrophone.show();
             this.el.btnSendMicrophone.hide();
 
             this._microphoneController = new MicrophoneController();
-            
-            this._microphoneController.on('ready', audio=>{
-                
+
+            this._microphoneController.on('ready', audio => {
+
                 this._microphoneController.startRecorder();
             });
 
-            this._microphoneController.on('recordtimer', timer =>{
-            
+            this._microphoneController.on('recordtimer', timer => {
+
                 this.el.recordMicrophoneTimer.innerHTML = Format.toTime(timer);
-                
+
             });
 
         });

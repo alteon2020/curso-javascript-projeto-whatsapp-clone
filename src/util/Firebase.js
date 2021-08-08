@@ -20,7 +20,7 @@ export class Firebase {
 
     init(){
 
-        if(!this._initialized){
+        if(!window._initializedFirebase){
             
             firebase.initializeApp(this._firebaseConfig);
             firebase.analytics();
@@ -28,7 +28,7 @@ export class Firebase {
             firebase.firestore().settings({
                 timestampsInSnapshots: true
             });
-            this._initialized = true;
+            window._initializedFirebase = true;
         }
         
     }
