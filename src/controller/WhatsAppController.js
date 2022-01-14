@@ -3,7 +3,9 @@ import { CameraController } from './CameraController';
 import { MicrophoneController } from './MicrophoneController';
 import { DocumentPreviewController } from './DocumentPreviewController';
 import { Firebase } from './../util/Firebase';
-import { User } from '../model/User';
+import { User } from './../model/User';
+import { Chat } from './../model/Chat';
+import { Message } from './../model/Message';
 
 export class WhatsAppController {
     constructor() {
@@ -123,22 +125,10 @@ export class WhatsAppController {
                     img.show();
                 }
 
-                div.on('click', e=> {
-                    this.el.activeName.innerHTML = (contact.name) ? contact.name : '';
-                    this.el.activeStatus.innerHTML = (contact.status) ? contact.status : '';
+                div.on('click', e => {
 
-                    if(contact.photo){
-                        let img = this.el.activePhoto;
-                        img.src = contact.photo;
-                        img.show();
-                    }
-
-                    this.el.home.hide();
-                    this.el.main.css({
-                        display: 'flex'
-                    });
+                    this.setActiveChat(contact);
                     
-
                 });
 
                 this.el.contactsMessagesList.appendChild(div);
@@ -147,6 +137,49 @@ export class WhatsAppController {
         });
 
         this._user.getContacts();
+    }
+
+    setActiveChat(contact){
+
+        if(this._contactActive){
+            Message.getRef(this._contactActive.chatId).onSnapshot(()=> {});
+        }
+
+        this._contactActive = contact;
+        this.el.activeName.innerHTML = (contact.name) ? contact.name : '';
+        this.el.activeStatus.innerHTML = (contact.status) ? contact.status : '';
+
+        if(contact.photo){
+            let img = this.el.activePhoto;
+            img.src = contact.photo;
+            img.show();
+        }
+
+        this.el.home.hide();
+        this.el.main.css({
+            display: 'flex'
+        });
+
+        Message.getRef(this._contactActive.chatId)
+        .orderBy('timeStamp')
+        .onSnapshot(docs => {
+            this.el.panelMessagesContainer.innerHTML = '';
+
+            docs.forEach(doc => {
+                let data = doc.data();
+                data.id = doc.id;
+                if(!this.el.panelMessagesContainer.querySelector('#_'+data.id)){
+                    let me = (data.from === this._user.email);
+                    let message = new Message();
+                    
+                    message.fromJSON(data);
+                    
+                    let view = message.getviewElement(me);
+
+                    this.el.panelMessagesContainer.appendChild(view);
+                }                
+            });
+        })
     }
 
     /*
@@ -294,10 +327,21 @@ export class WhatsAppController {
 
             contact.on('datachange', data => {
                 if (data.name) {
-                    this._user.addContact(contact).then(() => {
-                        this.el.btnClosePanelAddContact.click();
-                        console.info('Contato foi adicionado!');
+                    
+                    Chat.createIfNotExists(this._user.email, contact.email).then(chat => {
+                      
+                      contact.chatId = chat.id;
+
+                      this._user.chatId = chat.id;
+
+                      contact.addContact(this._user);
+
+                      this._user.addContact(contact).then(() => {
+                          this.el.btnClosePanelAddContact.click();
+                          console.info('Contato foi adicionado!');
+                      });
                     });
+                    
                 } else {
                     console.error('Usuario não foi encontrado!');
                 }
@@ -515,6 +559,14 @@ export class WhatsAppController {
 
         //Envia mensagem
         this.el.btnSend.on('click', e => {
+            Message.send(
+                this._contactActive.chatId,
+                this._user.email,
+                'text', 
+                this.el.inputText.innerHTML
+            );
+            this.el.inputText.innerHTML = '';
+            this.el.panelEmojis.removeClass('open');
             console.log(this.el.inputText.innerHTML);
         });
 

@@ -31,6 +31,12 @@ export class User extends Model {
     set photo(value){
         return this._data.photo = value;
     }
+    get chatId(){
+        return this._data.chatId;
+    }
+    set chatId(value){
+        return this._data.chatId = value;
+    }
     getById(id){
         
         return new Promise((s, f) =>{
