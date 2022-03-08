@@ -88,7 +88,7 @@ export class Message extends Model {
                                         </div>
                                     </div>
                                 </div>
-                                <img src="#" class="_1JVSX message-photo" style="width: 100%; display:none">
+                                <img src="${this.content}" class="_1JVSX message-photo" style="width: 100%; display:none">
                                 <div class="_1i3Za"></div>
                             </div>
                             <div class="message-container-legend">
@@ -114,6 +114,9 @@ export class Message extends Model {
                     </div>
                 </div>
                 `;
+                div.querySelector('.message-photo').on('load', e=>{
+                    console.log('Load ok!')
+                })
                 break;
             case 'document':
                 div.innerHTML = `    
@@ -256,7 +259,7 @@ export class Message extends Model {
                 `; 
                 break;
         }
-        
+
         let className = 'message-in';
         if (me) {
             className = 'message-out';
@@ -265,6 +268,28 @@ export class Message extends Model {
         div.firstElementChild.classList.add(className);
         console.log('Insert Here!');
         return div;
+    }
+
+    static sendImage(chatId, from, file) {
+
+        return new Promise ((s, f)=> {
+            let uploadTask = Firebase.hd().ref(from).child(Date.now + '_' + file.name).put(file);
+
+            uploadTask.on('state_changed', e=> {
+                console.info('Upload', e);
+            }, err => {
+                console.log(err);
+            }, ()=> {
+                Message.send(
+                    this._contactActive.chatId, 
+                    this._user.email, 
+                    'image', 
+                    uploadTask.snapshot.downloadURL
+                ).then(()=>{
+                    s();
+                });
+            });
+        });
     }
 
     static send(chatId, from, type, content) {
@@ -287,7 +312,7 @@ export class Message extends Model {
             });
         });
     }
-    
+
     static getRef(chatId) {
         return Firebase.db()
             .collection('chats')

@@ -2,6 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/analytics';
+import 'firebase/storage';
 
 export class Firebase {
     constructor(){
@@ -9,7 +10,7 @@ export class Firebase {
             apiKey: "AIzaSyCQ24aHmLe8kHV2wwmnKti_ceWALiSPMZk",
             authDomain: "whatsapp-clone-5dc01.firebaseapp.com",
             projectId: "whatsapp-clone-5dc01",
-            storageBucket: "whatsapp-clone-5dc01.appspot.com",
+            storageBucket: "gs://whatsapp-clone-5dc01.appspot.com",
             messagingSenderId: "799106499219",
             appId: "1:799106499219:web:4f5f6eeb69efb11f0a0366",
             measurementId: "G-F9LHC1Q0KN"
