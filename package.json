@@ -19,9 +19,9 @@
   },
   "homepage": "https://github.com/alteon2020/curso-javascript-projeto-whatsapp-clone#readme",
   "dependencies": {
-    "firebase": "^8.8.1",
-    "pdfjs-dist": "^2.0.489",
-    "webpack": "^3.1.0",
-    "webpack-dev-server": "^2.11.5"
+    "firebase": "8.8.1",
+    "pdfjs-dist": "2.0.489",
+    "webpack": "3.1.0",
+    "webpack-dev-server": "2.11.5"
   }
 }
