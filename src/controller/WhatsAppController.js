@@ -6,6 +6,7 @@ import { Firebase } from './../util/Firebase';
 import { User } from './../model/User';
 import { Chat } from './../model/Chat';
 import { Message } from './../model/Message';
+import { Base64 } from '../util/Base64';
 
 export class WhatsAppController {
     constructor() {
@@ -190,7 +191,13 @@ export class WhatsAppController {
 
                         this.el.panelMessagesContainer.appendChild(view);
 
-                    } else if (me) {
+                    } else {
+                        
+                        let view = message.getviewElement(me);
+                        this.el.panelMessagesContainer.querySelector('#_' + data.id).innerHTML = view.innerHTML;
+                    }
+
+                    if (this.el.panelMessagesContainer.querySelector('#_' + data.id) && me) {
                         let msgEl = this.el.panelMessagesContainer.querySelector('#_' + data.id);
                         msgEl.querySelector('.message-status').innerHTML = message.getStatusViewElement()
                             .outerHTML;
@@ -472,7 +479,7 @@ export class WhatsAppController {
                     .then(buffer => { return new File([buffer, filename, { type: mimeType }]) })
                     .then(file => {
                         Message.sendImage(this._contactActive.chatId, this._user.email, file);
-                        
+
                         this.el.btnSendPicture.disabled = false;
                         this.closeAllMainPanel();
                         this._camera.stop();
@@ -556,7 +563,31 @@ export class WhatsAppController {
 
         //Botão que envia o documento
         this.el.btnSendDocument.on('click', e => {
-            console.log("Send document");
+
+            let file = this.el.inputDocument.files[0];
+            let base64 = this.el.imgPanelDocumentPreview.src;
+            if (file.type === 'application/pdf') {
+
+                Base64.toFile(base64).then(filePreview => {
+                    Message.sendDocument(
+                        this._contactActive.chatId,
+                        this._user.email, file,
+                        filePreview,
+                        this.el.infoPanelDocumentPreview.innerHTML
+                    );
+                });
+
+
+            } else {
+                Message.sendDocument(
+                    this._contactActive.chatId,
+                    this._user.email,
+                    file,
+                );
+            }
+
+            this.el.btnClosePanelDocumentPreview.click();
+
         });
 
         //Evento para anexar contato
