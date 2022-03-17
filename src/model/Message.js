@@ -1,10 +1,10 @@
 import { Firebase } from "../util/Firebase";
 import { Model } from "./Model";
-import { Format} from "../util/Format";
+import { Format } from "../util/Format";
 
 export class Message extends Model {
 
-    constructor(){
+    constructor() {
         super();
     }
 
@@ -23,10 +23,10 @@ export class Message extends Model {
     get status() { return this._data.status; }
     set status(value) { return this._data.status = value; }
 
-    getviewElement(me = true){
+    getviewElement(me = true) {
 
         let div = document.createElement('div');
-        switch(this.type){
+        switch (this.type) {
             case 'contact':
                 div.innerHTML = `
                 <div class="_3_7SH kNKwo tail">
@@ -109,7 +109,7 @@ export class Message extends Model {
                     </div>
                 </div>
                 `;
-                div.querySelector('.message-photo').on('load', e=>{
+                div.querySelector('.message-photo').on('load', e => {
                     div.querySelector('.message-photo').show();
                     div.querySelector('._34Olu').hide();
                     div.querySelector('._3v3PK').css({
@@ -255,7 +255,7 @@ export class Message extends Model {
                         </div>
                     </div>
                 </div>
-                `; 
+                `;
                 break;
         }
 
@@ -270,27 +270,27 @@ export class Message extends Model {
 
     static sendImage(chatId, from, file) {
 
-        return new Promise ((s, f)=> {
+        return new Promise((s, f) => {
             let uploadTask = Firebase.hd().ref(from).child(Date.now() + '_' + file.name).put(file);
 
-            uploadTask.on('state_changed', e=> {
+            uploadTask.on('state_changed', e => {
                 console.info('Upload', e);
             }, err => {
                 console.log(err);
-            }, ()=> {
-                console.log('Content: ', uploadTask.snapshot.ref);
-                let urlImg = uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    return downloadURL;
-                });
-                
-                console.log(urlImg);
-                Message.send(
-                    chatId,
-                    from,
-                    'image', 
-                    urlImg
-                ).then(()=>{
-                    s();
+            }, () => {
+                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    Message.send(
+                        chatId,
+                        from,
+                        'image',
+                        downloadURL
+                    ).then(() => {
+                        s();
+                    }).catch(err => {
+                        f(err);
+                    });
+                }).catch(err => {
+                    console.log(err);
                 });
             });
         });
@@ -305,12 +305,12 @@ export class Message extends Model {
                 status: 'wait',
                 type,
                 from,
-            }).then(result=> {
+            }).then(result => {
                 result.parent.doc(result.id).set({
                     status: 'sent'
                 }, {
                     merge: true
-                }).then(()=>{
+                }).then(() => {
                     s();
                 });
             });
