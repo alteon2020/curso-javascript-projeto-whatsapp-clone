@@ -331,6 +331,7 @@ export class Message extends Model {
 
                 inputRange.on('change', e => {
                     audioEl.currentTime = (inputRange.value * this.duration) / 100;
+                    audioDuration.innerHTML = Format.toTime(audioEl.currentTime * 1000);
                 });
 
                 break;
