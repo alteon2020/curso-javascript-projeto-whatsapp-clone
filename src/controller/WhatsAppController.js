@@ -224,7 +224,7 @@ export class WhatsAppController {
                                     contact.addContact(this._user);
 
                                     this.setActiveChat(contact);
-                                })
+                                });
                             });
                         });
                     }
@@ -667,6 +667,15 @@ export class WhatsAppController {
 
         //Envia o audio do microphone
         this.el.btnFinishMicrophone.on('click', e => {
+            this._microphoneController.on('recorded', (file, metadata) => {
+                Message.sendAudio(
+                    this._contactActive.chatId,
+                    this._user.email,
+                    file,
+                    metadata,
+                    this._user.photo
+                );
+            });
             this._microphoneController.stopRecorder();
             this.closeRecordMicrophone();
         });
