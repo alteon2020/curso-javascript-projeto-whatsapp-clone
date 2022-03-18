@@ -300,9 +300,15 @@ export class Message extends Model {
             }, () => {
                 uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
                     s(downloadURL);
+<<<<<<< HEAD
                 }).catch(err => {
                     f(err);
                 });
+=======
+                });
+            }).catch(err => {
+                f(err);
+>>>>>>> c4f9e8845f30543a8e8151737b28c009095d10ee
             });
         });
 
