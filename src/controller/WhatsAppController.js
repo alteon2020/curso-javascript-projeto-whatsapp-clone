@@ -12,13 +12,51 @@ import { Upload } from '../util/Upload';
 
 export class WhatsAppController {
     constructor() {
-        console.log('WhatsAppController OK');
+        this._active = true;
         this._firebase = new Firebase();
         this.initAuth();
         this.elementsPrototype();
         this.loadElements();
         this.initEvents();
+        this.checkNotifications();
 
+    }
+
+    checkNotifications() {
+        if (typeof Notification === 'function') {
+            if (Notification.permission !== 'granted') {
+                this.el.alertNotificationPermission.show();
+            } else {
+                this.el.alertNotificationPermission.hide();
+            }
+
+            this.el.alertNotificationPermission.on('click', e => {
+                Notification.requestPermission(permission => {
+                    if (permission === 'granted') {
+                        this.el.alertNotificationPermission.hide();
+                    }
+                });
+            });
+
+        }
+    }
+
+    notification(data) {
+        if (Notification.permission === 'granted' && !this._active) {
+
+            let n = new Notification(this._contactActive.name, {
+                icon: this._contactActive.photo,
+                body: data.content
+            });
+
+            let sound = new Audio('./audio/alert.mp3');
+            sound.currentTime = 0;
+            sound.play();
+
+            setTimeout(() => {
+                if (n) n.close();
+            }, 3000);
+        }
     }
 
     initAuth() {
@@ -161,8 +199,11 @@ export class WhatsAppController {
         this.el.main.css({
             display: 'flex'
         });
-
+        
         this.el.panelMessagesContainer.innerHTML = '';
+        
+        this._messagesReceived = [];
+        
         Message.getRef(this._contactActive.chatId)
             .orderBy('timeStamp')
             .onSnapshot(docs => {
@@ -170,6 +211,8 @@ export class WhatsAppController {
                 let scrollTopMax = (this.el.panelMessagesContainer.scrollHeight -
                     this.el.panelMessagesContainer.offsetHeight);
                 let autoscroll = (scrollTop >= scrollTopMax);
+                
+                
                 docs.forEach(doc => {
                     let data = doc.data();
                     data.id = doc.id;
@@ -180,6 +223,11 @@ export class WhatsAppController {
                     let me = (data.from === this._user.email);
 
                     let view = message.getviewElement(me);
+
+                    if (!me && this._messagesReceived.filter(id => { return (id === data.id)}).length === 0) {
+                        this.notification(data);
+                        this._messagesReceived.push(data.id);
+                    }
 
                     if (!this.el.panelMessagesContainer.querySelector('#_' + data.id)) {
 
@@ -321,6 +369,13 @@ export class WhatsAppController {
      */
     initEvents() {
 
+        window.addEventListener('focus', e=> {
+            this._active = true;
+        });
+        window.addEventListener('blur', e=> {
+            this._active = false;
+        });
+
         this.el.inputSearchContacts.on('keyup', e => {
             if (this.el.inputSearchContacts.value.length > 0) {
                 this.el.inputSearchContactsPlaceholder.hide();
@@ -415,7 +470,6 @@ export class WhatsAppController {
 
                         this._user.addContact(contact).then(() => {
                             this.el.btnClosePanelAddContact.click();
-                            console.info('Contato foi adicionado!');
                         });
                     });
 
@@ -565,8 +619,6 @@ export class WhatsAppController {
                         'height': '100%'
                     });
 
-                    console.log(file.type);
-
                 }).catch(err => {
                     this.el.panelDocumentPreview.css({
                         'height': '100%'
@@ -607,7 +659,6 @@ export class WhatsAppController {
             let file = this.el.inputDocument.files[0];
             let base64 = this.el.imgPanelDocumentPreview.src;
             if (file.type === 'application/pdf') {
-                console.log("info arquivo", this.el.infoPanelDocumentPreview.innerHTML);
                 Base64.toFile(base64).then(filePreview => {
                     Message.sendDocument(
                         this._contactActive.chatId,
@@ -724,7 +775,6 @@ export class WhatsAppController {
             );
             this.el.inputText.innerHTML = '';
             this.el.panelEmojis.removeClass('open');
-            console.log(this.el.inputText.innerHTML);
         });
 
         //Botão dos emojis

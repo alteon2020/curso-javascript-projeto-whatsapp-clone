@@ -304,7 +304,6 @@ export class Message extends Model {
                 }
 
                 audioEl.onended = e => {
-                    console.log('Executando')
                     audioEl.currentTime = 0;
                     inputRange.value = 0;
                 }
