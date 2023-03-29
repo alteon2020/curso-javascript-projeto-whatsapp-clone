@@ -22,6 +22,6 @@
     "firebase": "8.8.1",
     "pdfjs-dist": "2.0.489",
     "webpack": "3.1.0",
-    "webpack-dev-server": "2.11.5"
+    "webpack-dev-server": "4.13.1"
   }
 }
