@@ -21,7 +21,7 @@
   "dependencies": {
     "firebase": "8.8.1",
     "pdfjs-dist": "2.0.489",
-    "webpack": "3.1.0",
+    "webpack": "5.76.3",
     "webpack-dev-server": "2.11.5"
   }
 }
